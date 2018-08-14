@@ -7,13 +7,13 @@ Generate [Graphviz](www.graphviz.org) images from [clojure.spec](https://clojure
 ### Leiningen dependency
 
 ```
-[specviz "0.2.3"]
+[specviz "0.2.5"]
 ```
 
 ## Usage
 
 Create a diagram of all specs in the `specviz.example` namespace, and their
-dependencies. The file will be exported to `foo.png`.
+dependencies. The file will be exported to `foo.svg`.
 
 ```
 user=> (require '[specviz.core :as specviz])

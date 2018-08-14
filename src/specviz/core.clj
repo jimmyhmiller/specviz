@@ -10,6 +10,7 @@
     [specviz.spec :as spec]
     [specviz.util :as util]))
 
+
 ;; *** Table Nodes ***
 ;; Use `specviz.html` to construct table representations of spec data, and
 ;; render it a an html string in order to be used as the label of a graphviz
@@ -90,11 +91,11 @@
                                     (first spec-form))))
 
 (s/def ::keys (s/cat
-                :keys #{'clojure.spec/keys}
+                :keys #{'clojure.spec.alpha/keys}
                 :parts (s/* (s/cat :type #{:req :opt :req-un :opt-un}
                                    :kws (s/every keyword? :kind vector?)))))
 
-(defmethod spec->graphviz-elements* 'clojure.spec/keys
+(defmethod spec->graphviz-elements* 'clojure.spec.alpha/keys
   [spec-form spec-keyword]
   (let [node-name (or (clean-name spec-keyword) (next-name))
         parts (:parts (s/conform ::keys spec-form))
@@ -138,7 +139,7 @@
                           nil))
      ::graphviz/shape "plaintext"}))
 
-(defmethod spec->graphviz-elements* 'clojure.spec/and
+(defmethod spec->graphviz-elements* 'clojure.spec.alpha/and
   [spec-form spec-keyword]
   (let [and-node (and-graphviz-node (next-name) (count (rest spec-form)))
         branches (map-indexed
@@ -161,7 +162,7 @@
    ::graphviz/label ""
    ::graphviz/shape "diamond"})
 
-(defmethod spec->graphviz-elements* 'clojure.spec/or
+(defmethod spec->graphviz-elements* 'clojure.spec.alpha/or
   [spec-form spec-keyword]
   (let [or-node (or-graphviz-node)
         or-pairs (->> spec-form rest (partition 2))
@@ -222,7 +223,7 @@
                       (range)))]
     (conj nodes table-node)))
 
-(defmethod spec->graphviz-elements* 'clojure.spec/every
+(defmethod spec->graphviz-elements* 'clojure.spec.alpha/every
   [spec-form spec-keyword]
   (if (not (coll? (second spec-form)))
     ;; TODO - factor this!
@@ -239,7 +240,24 @@
                           :ellipses-row true
                           :title-suffix "{...}")))
 
-(defmethod spec->graphviz-elements* 'clojure.spec/tuple
+(defmethod spec->graphviz-elements* 'clojure.spec.alpha/coll-of
+  [spec-form spec-keyword]
+  (if (not (coll? (second spec-form)))
+    ;; TODO - factor this!
+    (tabular-spec->graphviz-elements* [(second spec-form)]
+                          spec-keyword
+                          true
+                          :table-opts {:cellspacing 0}
+                          :ellipses-row true
+                          :title-suffix "(...)")
+    (tabular-spec->graphviz-elements* (rest (second spec-form))
+                          spec-keyword
+                          true
+                          :table-opts {:cellspacing 0}
+                          :ellipses-row true
+                          :title-suffix "{...}")))
+
+(defmethod spec->graphviz-elements* 'clojure.spec.alpha/tuple
   [spec-form spec-keyword]
   (tabular-spec->graphviz-elements* (rest spec-form)
                                     spec-keyword
@@ -247,7 +265,7 @@
                                     :row-suffix " )"
                                     :row-prefix "( "))
 
-(defmethod spec->graphviz-elements* 'clojure.spec/nilable
+(defmethod spec->graphviz-elements* 'clojure.spec.alpha/nilable
   [spec-form spec-keyword]
   (spec->graphviz-elements `(s/or :nil nil?
                                   :not-nil ~@(rest spec-form))
@@ -255,29 +273,31 @@
 
 ;; Unsupported
 
-(defmethod spec->graphviz-elements* 'clojure.spec/multi-spec
+(defmethod spec->graphviz-elements* 'clojure.spec.alpha/multi-spec
   [spec-form spec-keyword]
   nil)
 
-(defmethod spec->graphviz-elements* 'clojure.spec/fspec
+(defmethod spec->graphviz-elements* 'clojure.spec.alpha/fspec
   [spec-form spec-keyword]
   nil)
 
-(defmethod spec->graphviz-elements* 'clojure.spec/*
+(defmethod spec->graphviz-elements* 'clojure.spec.alpha/*
   [spec-form spec-keyword]
   nil)
 
-(defmethod spec->graphviz-elements* 'clojure.spec/&
+(defmethod spec->graphviz-elements* 'clojure.spec.alpha/&
   [spec-form spec-keyword]
   nil)
 
-(defmethod spec->graphviz-elements* 'clojure.spec/cat
+(defmethod spec->graphviz-elements* 'clojure.spec.alpha/cat
   [spec-form spec-keyword]
   nil)
 
-(defmethod spec->graphviz-elements* 'clojure.spec/merge
+(defmethod spec->graphviz-elements* 'clojure.spec.alpha/merge
   [spec-form spec-keyword]
   nil)
+
+
 
 (defn other-spec->graphviz-elements
   [spec-form spec-keyword]
@@ -325,7 +345,7 @@
 (defn diagram
   "Generate a diagram of the specs.
 
-  `filename` only the name of the file. Both <filename>.png, and <filename>.dot
+  `filename` only the name of the file. Both <filename>.svg, and <filename>.dot
   files will be generated.
 
   `root` can be a keyword, naming a spec in the registry, or a namespace symbol

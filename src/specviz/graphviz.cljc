@@ -9,7 +9,7 @@
 
     - specs for graphviz data
     - functions to convert graphviz data into a graphviz dot string
-    - a function to render a graphviz dot string into a png image
+    - a function to render a graphviz dot string into a svg image
   "
   (:require
     [clojure.spec.alpha :as s]
@@ -147,7 +147,7 @@
 
 (defn generate-image!
   "Generates two files (1) <filename>.dot containing the dot string, and
-  <filename>.png containing the graphviz rendering as a png file, using the
+  <filename>.svg containing the graphviz rendering as a svg file, using the
   `dot` executable binary."
   [dot-string filename]
   (let [dot-string' (str "digraph {\nrankdir=LR;\n" dot-string "\n}")]

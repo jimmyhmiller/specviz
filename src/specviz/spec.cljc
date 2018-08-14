@@ -35,8 +35,8 @@
   (s/conform spec x))
 
 (defn literal?
-  "Returns true if `x` is a spec literal, ex: `(clojure.spec/coll-of int?)`."
+  "Returns true if `x` is a spec literal, ex: `(clojure.spec.alpha/coll-of int?)`."
   [x]
   (when (coll? x)
     (= (namespace (first x))
-       "clojure.spec")))
+       "clojure.spec.alpha")))
